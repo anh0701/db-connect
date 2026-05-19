@@ -5,3 +5,10 @@ app connect multi database
 ## Tech stack
 
 - Java
+- Tauri
+
+<!-- mvn archetype:generate \
+  -DgroupId=com.anh \
+  -DartifactId=db-engine \
+  -DarchetypeArtifactId=maven-archetype-quickstart \
+  -DinteractiveMode=false -->
