@@ -1,0 +1,30 @@
+###
+GET http://localhost:8080/ping
+
+####
+
+POST http://localhost:8080/connect/test
+Content-Type: application/json
+
+{
+  "type": "POSTGRES",
+  "host": "localhost",
+  "port": 5432,
+  "database": "postgres",
+  "username": "postgres",
+  "password": "123456"
+}
+
+###
+
+POST http://localhost:8080/connect/create
+Content-Type: application/json
+
+{
+  "type": "POSTGRES",
+  "host": "localhost",
+  "port": 5432,
+  "database": "postgres",
+  "username": "postgres",
+  "password": "123456"
+}

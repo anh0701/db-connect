@@ -1,7 +1,6 @@
 {
     "java.import.maven.enabled": true,
     "java.configuration.updateBuildConfiguration": "automatic",
-
     "java.project.sourcePaths": [
         "db-engine/src/main/java"
     ]
