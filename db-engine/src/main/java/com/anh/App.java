@@ -12,7 +12,21 @@ public class App
 {
     public static void main( String[] args )
     {
-        Javalin app = Javalin.create();
+        Javalin app = Javalin.create(config -> {
+
+            config.bundledPlugins.enableCors(cors -> {
+                cors.addRule(rule -> {
+                    rule.anyHost();
+                });
+            });
+
+            // config.bundledPlugins.enableCors(cors -> {
+            //     cors.addRule(rule -> {
+            //         rule.allowHost("http://localhost:1420");
+            //         rule.allowHost("http://localhost:5173");
+            //     });
+            // });
+        });
 
         app.start(8080);
 

@@ -12,3 +12,6 @@ app connect multi database
   -DartifactId=db-engine \
   -DarchetypeArtifactId=maven-archetype-quickstart \
   -DinteractiveMode=false -->
+
+
+<!-- npm run tauri dev -->
