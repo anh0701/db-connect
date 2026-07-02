@@ -1,41 +1,20 @@
 package com.anh.core.configdb;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.Statement;
 
-public class ConfigDatabaseInitializer {
+public final class ConfigDatabaseInitializer {
+
+    private ConfigDatabaseInitializer() {
+    }
 
     public static void initialize() {
 
-        try (
-                Connection connection = ConfigDatabase.getConnection();
-                Statement statement = connection.createStatement()) {
+        try (Connection connection = ConfigDatabase.getConnection()) {
 
-            InputStream inputStream = ConfigDatabaseInitializer.class
-                    .getClassLoader()
-                    .getResourceAsStream("sql/configdb/v1_init.sql");
-
-            if (inputStream == null) {
-                throw new RuntimeException("Cannot find sql/configdb/v1_init.sql");
-            }
-
-            String sql = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-
-            for (String script : sql.split(";")) {
-
-                script = script.trim();
-
-                System.out.println("==== SQL ====");
-                System.out.println(script);
-
-                if (!script.isEmpty()) {
-                    statement.execute(script);
-                }
-            }
+            MigrationManager.migrate(connection);
 
         } catch (Exception e) {
+
             throw new RuntimeException(e);
         }
     }
