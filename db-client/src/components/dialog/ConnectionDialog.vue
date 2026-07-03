@@ -26,6 +26,8 @@ const tested = ref(false);
 
 const message = ref("");
 
+const saveConnection = ref(true);
+
 watch(form, () => {
 
     tested.value = false;
@@ -186,6 +188,14 @@ function changeType(type: DatabaseType){
                 />
             </label>
 
+            <label class="checkbox">
+                <input
+                    type="checkbox"
+                    v-model="saveConnection"
+                />
+                Save connection
+            </label>
+
             <p>{{ message }} </p>
             <div class="buttons">
 
@@ -263,6 +273,16 @@ select {
     justify-content: flex-end;
     gap: 12px;
     flex-wrap: wrap;
+}
+
+.checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox input {
+    width: auto;
 }
 
 </style>

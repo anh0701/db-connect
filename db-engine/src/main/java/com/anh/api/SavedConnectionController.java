@@ -1,6 +1,5 @@
 package com.anh.api;
 
-import com.anh.dto.ConnectionRequest;
 import com.anh.model.SavedConnection;
 import com.anh.repository.SavedConnectionRepository;
 

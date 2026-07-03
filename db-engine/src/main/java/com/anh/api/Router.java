@@ -14,5 +14,7 @@ public class Router {
         MetadataController.register(app);
 
         SavedConnectionController.register(app);
+
+        ApplicationSettingController.register(app);
     }
 }

@@ -50,3 +50,9 @@ CREATE TABLE IF NOT EXISTS application_setting (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+
+INSERT OR IGNORE INTO application_setting(key, value)
+VALUES
+    ('theme', 'light'),
+    ('language', 'en'),
+    ('save_connection', 'true');

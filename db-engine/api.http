@@ -93,3 +93,17 @@ Accept: application/json
     "databaseName": "job",
     "username": "postgres"
 }
+
+###
+
+GET {{localhost}}/settings
+
+###
+
+PUT {{localhost}}/settings
+Accept: application/json
+
+{
+    "key": "save_connection",
+    "value": "false"
+}
