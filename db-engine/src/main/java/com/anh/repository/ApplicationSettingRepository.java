@@ -53,4 +53,24 @@ public class ApplicationSettingRepository extends BaseRepository{
             throw new RuntimeException(e);
         }
     }
+
+    public ApplicationSetting findByKey(String key){
+        String sql = """
+                Select * from application_setting where key = ?;
+                """;
+
+        try (
+                Connection connection = getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ) {
+                    statement.setString(1, key);
+
+                try (ResultSet rs = statement.executeQuery()) {
+                    return ApplicationSettingMapper.map(rs);
+                }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package com.anh.api;
 
 import com.anh.model.ApplicationSetting;
-import com.anh.model.SavedConnection;
 import com.anh.repository.ApplicationSettingRepository;
 
 import io.javalin.Javalin;
@@ -19,15 +18,28 @@ public class ApplicationSettingController {
 
         registerUpdate(app);
 
+        registerGetByKey(app);
+
         // registerDelete(app);
     }
 
+    private static void registerGetByKey(Javalin app) {
+        app.get("/settings/{key}", ctx -> {
+
+            String key = ctx.pathParam("key");
+
+            ctx.json(repository.findByKey(key));
+        });
+    }
+
     private static void registerUpdate(Javalin app) {
-        app.put("/settings", ctx -> {
+        app.put("/settings/{key}", ctx -> {
             ApplicationSetting request =
                     ctx.bodyAsClass(ApplicationSetting.class);
 
-            int id = repository.update(request.key, request.value);
+            String key = ctx.pathParam("key");
+
+            int id = repository.update(key, request.value);
 
             ctx.status(201);
 
