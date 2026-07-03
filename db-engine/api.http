@@ -104,10 +104,9 @@ GET {{localhost}}/settings/save_connection
 
 ###
 
-PUT {{localhost}}/settings
+PUT {{localhost}}/settings/save_connection
 Accept: application/json
 
 {
-    "key": "save_connection",
     "value": "false"
 }

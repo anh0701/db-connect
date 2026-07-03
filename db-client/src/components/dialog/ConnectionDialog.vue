@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import { ConnectionRequest } from "../../types/connection/ConnectionRequest";
 import { createConnection, testConnection } from "../../api/connection";
 import { DatabaseType } from "../../types/DatabaseType";
+import { getSetting, updateSetting } from "../../api/settings";
+import { saveConnection } from "../../api/saved-connection";
 
 const emit = defineEmits<{
     (e: "close"): void;
@@ -26,7 +28,11 @@ const tested = ref(false);
 
 const message = ref("");
 
-const saveConnection = ref(true);
+const saveConnectionChecked = ref(true);
+
+const connectionName = ref("");
+
+const customConnectionName = ref(false);
 
 watch(form, () => {
 
@@ -36,26 +42,60 @@ watch(form, () => {
 
 }, { deep: true });
 
+watch(
+    () => [form.host, form.database],
+    () => {
+        if (!customConnectionName.value) {
+            connectionName.value = generateConnectionName();
+        }
+    }
+);
+
+watch(connectionName, (value) => {
+
+    if (value !== generateConnectionName()) {
+        customConnectionName.value = true;
+    }
+
+});
+
+function generateConnectionName() {
+
+    const database = form.database.trim() || "database";
+
+    const host = form.host.trim() || "localhost";
+
+    return `${database}@${host}`;
+
+}
+
+onMounted(async () => {
+
+    connectionName.value = generateConnectionName();
+
+    try {
+        const setting = await getSetting("save_connection");
+        saveConnectionChecked.value = setting.value === "true";
+    } catch {
+        saveConnectionChecked.value = true;
+    }
+
+});
+
 async function onTest() {
 
     testing.value = true;
-
     message.value = "";
 
     try {
 
         const res = await testConnection(form);
-
         tested.value = res.success;
-
         message.value = res.message;
 
     } catch (e: any) {
-
         tested.value = false;
-
         message.value = e.message;
-
     } finally {
 
         testing.value = false;
@@ -72,18 +112,31 @@ async function onConnect() {
 
         await createConnection(form);
 
-        emit("created");
+        await updateSetting(
+            "save_connection",
+            String(saveConnectionChecked.value)
+        );
 
+        if (saveConnectionChecked.value) {
+
+            await saveConnection({
+                name: connectionName.value,
+                databaseType: form.type,
+                host: form.host,
+                port: form.port,
+                databaseName: form.database,
+                username: form.username
+            });
+
+        }
+
+        emit("created");
         emit("close");
 
-    } catch (e:any) {
-
+    } catch (e: any) {
         message.value = e.message;
-
     } finally {
-
         connecting.value = false;
-
     }
 
 }
@@ -154,6 +207,11 @@ function changeType(type: DatabaseType){
             </label>
 
             <label>
+                Connection Name
+                <input v-model="connectionName" />
+            </label>
+
+            <label>
             Host
                 <input v-model="form.host"/>
             </label>
@@ -191,7 +249,7 @@ function changeType(type: DatabaseType){
             <label class="checkbox">
                 <input
                     type="checkbox"
-                    v-model="saveConnection"
+                    v-model="saveConnectionChecked"
                 />
                 Save connection
             </label>

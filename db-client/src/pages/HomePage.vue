@@ -1,32 +1,40 @@
 <script setup lang="ts">
+
 import { onMounted, ref } from "vue";
 
-import { getSessions } from "../api/connection";
-
-import type { ConnectionSession } from "../types/connection/connection.ts";
 import HomeHeader from "../components/home/HomeHeader.vue";
-import SessionCard from "../components/home/SessionCard.vue";
+import SavedConnectionCard from "../components/home/SavedConnectionCard.vue";
 import ConnectionDialog from "../components/dialog/ConnectionDialog.vue";
 
-const sessions = ref<ConnectionSession[]>([]);
+import { getSavedConnections } from "../api/saved-connection";
+
+import type { SavedConnection } from "../types/connection/SavedConnection";
 
 const loading = ref(false);
 
+const connections = ref<SavedConnection[]>([]);
+
+const selectedConnection = ref<SavedConnection>();
+
 const showDialog = ref(false);
 
-async function loadSessions() {
+async function loadConnections() {
 
     loading.value = true;
 
     try {
 
-        sessions.value = await getSessions();
+        connections.value = await getSavedConnections();
 
-    } catch (err) {
+    }
 
-        console.error(err);
+    catch (e) {
 
-    } finally {
+        console.error(e);
+
+    }
+
+    finally {
 
         loading.value = false;
 
@@ -34,7 +42,23 @@ async function loadSessions() {
 
 }
 
-onMounted(loadSessions);
+function openNewConnection() {
+
+    selectedConnection.value = undefined;
+
+    showDialog.value = true;
+
+}
+
+function openConnection(connection: SavedConnection) {
+
+    selectedConnection.value = connection;
+
+    showDialog.value = true;
+
+}
+
+onMounted(loadConnections);
 
 </script>
 
@@ -42,9 +66,11 @@ onMounted(loadSessions);
 
 <div class="container">
 
-    <HomeHeader @new-connection="showDialog=true"/>
+    <HomeHeader
+        @new-connection="openNewConnection"
+    />
 
-    <button @click="loadSessions">
+    <button @click="loadConnections">
 
         Refresh
 
@@ -56,22 +82,43 @@ onMounted(loadSessions);
 
     </p>
 
-    <SessionCard
-        v-for="session in sessions"
-        :key="session.id"
-        :session="session"
-    />
+    <div
+        v-else
+        class="connection-list"
+    >
 
-    <p v-if="!loading && sessions.length===0">
+        <SavedConnectionCard
 
-        No Connection
+            v-for="connection in connections"
+
+            :key="connection.id"
+
+            :connection="connection"
+
+            @connect="openConnection(connection)"
+
+        />
+
+    </div>
+
+    <p
+        v-if="!loading && connections.length===0"
+    >
+
+        No saved connections.
 
     </p>
 
     <ConnectionDialog
+
         v-if="showDialog"
+
+        :connection="selectedConnection"
+
         @close="showDialog=false"
-        @created="loadSessions()"
+
+        @created="loadConnections"
+
     />
 
 </div>
@@ -80,16 +127,24 @@ onMounted(loadSessions);
 
 <style scoped>
 
-.container {
-    width: min(900px, 100%);
-    margin: 0 auto;
-    padding: clamp(16px, 3vw, 40px);
-    box-sizing: border-box;
+.container{
+
+    width:min(900px,100%);
+
+    margin:auto;
+
+    padding:32px;
+
+    box-sizing:border-box;
+
 }
 
-.session-list {
-    display: grid;
-    gap: 20px;
+.connection-list{
+
+    display:grid;
+
+    gap:16px;
+
 }
 
 </style>
