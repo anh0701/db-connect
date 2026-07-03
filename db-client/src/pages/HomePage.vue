@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { onMounted, ref } from "vue";
 
 import HomeHeader from "../components/home/HomeHeader.vue";
@@ -10,6 +9,8 @@ import { getSavedConnections } from "../api/saved-connection";
 
 import type { SavedConnection } from "../types/connection/SavedConnection";
 
+type DialogMode = "new" | "edit" | "connect";
+
 const loading = ref(false);
 
 const connections = ref<SavedConnection[]>([]);
@@ -17,6 +18,8 @@ const connections = ref<SavedConnection[]>([]);
 const selectedConnection = ref<SavedConnection>();
 
 const showDialog = ref(false);
+
+const dialogMode = ref<DialogMode>("new");
 
 async function loadConnections() {
 
@@ -26,15 +29,11 @@ async function loadConnections() {
 
         connections.value = await getSavedConnections();
 
-    }
-
-    catch (e) {
+    } catch (e) {
 
         console.error(e);
 
-    }
-
-    finally {
+    } finally {
 
         loading.value = false;
 
@@ -44,6 +43,8 @@ async function loadConnections() {
 
 function openNewConnection() {
 
+    dialogMode.value = "new";
+
     selectedConnection.value = undefined;
 
     showDialog.value = true;
@@ -52,6 +53,18 @@ function openNewConnection() {
 
 function openConnection(connection: SavedConnection) {
 
+    dialogMode.value = "connect";
+
+    selectedConnection.value = connection;
+
+    showDialog.value = true;
+
+}
+
+function editConnection(connection: SavedConnection) {
+
+    dialogMode.value = "edit";
+
     selectedConnection.value = connection;
 
     showDialog.value = true;
@@ -59,92 +72,69 @@ function openConnection(connection: SavedConnection) {
 }
 
 onMounted(loadConnections);
-
 </script>
 
 <template>
+    <div class="container">
 
-<div class="container">
+        <HomeHeader
+            @new-connection="openNewConnection"
+        />
 
-    <HomeHeader
-        @new-connection="openNewConnection"
-    />
+        <button @click="loadConnections">
+            Refresh
+        </button>
 
-    <button @click="loadConnections">
+        <p v-if="loading">
+            Loading...
+        </p>
 
-        Refresh
+        <div
+            v-else
+            class="connection-list"
+        >
+            <SavedConnectionCard
+                v-for="connection in connections"
+                :key="connection.id"
+                :connection="connection"
+                @connect="openConnection(connection)"
+                @edit="editConnection(connection)"
+            />
+        </div>
 
-    </button>
+        <p v-if="!loading && connections.length === 0">
+            No saved connections.
+        </p>
 
-    <p v-if="loading">
-
-        Loading...
-
-    </p>
-
-    <div
-        v-else
-        class="connection-list"
-    >
-
-        <SavedConnectionCard
-
-            v-for="connection in connections"
-
-            :key="connection.id"
-
-            :connection="connection"
-
-            @connect="openConnection(connection)"
-
+        <ConnectionDialog
+            v-if="showDialog"
+            :mode="dialogMode"
+            :connection="selectedConnection"
+            @close="showDialog = false"
+            @created="loadConnections"
         />
 
     </div>
-
-    <p
-        v-if="!loading && connections.length===0"
-    >
-
-        No saved connections.
-
-    </p>
-
-    <ConnectionDialog
-
-        v-if="showDialog"
-
-        :connection="selectedConnection"
-
-        @close="showDialog=false"
-
-        @created="loadConnections"
-
-    />
-
-</div>
-
 </template>
 
 <style scoped>
+.container {
 
-.container{
+    width: min(900px, 100%);
 
-    width:min(900px,100%);
+    margin: auto;
 
-    margin:auto;
+    padding: 32px;
 
-    padding:32px;
-
-    box-sizing:border-box;
-
-}
-
-.connection-list{
-
-    display:grid;
-
-    gap:16px;
+    box-sizing: border-box;
 
 }
 
+.connection-list {
+
+    display: grid;
+
+    gap: 16px;
+
+}
 </style>

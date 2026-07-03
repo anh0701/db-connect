@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { ConnectionRequest } from "../../types/connection/ConnectionRequest";
 import { createConnection, testConnection } from "../../api/connection";
 import { DatabaseType } from "../../types/DatabaseType";
 import { getSetting, updateSetting } from "../../api/settings";
 import { saveConnection } from "../../api/saved-connection";
+import { SavedConnection } from "../../types/connection/SavedConnection";
+
+type DialogMode = "new" | "edit" | "connect";
+
+const props = defineProps<{
+    mode: DialogMode;
+    connection?: SavedConnection;
+}>();
 
 const emit = defineEmits<{
     (e: "close"): void;
@@ -59,6 +67,72 @@ watch(connectionName, (value) => {
 
 });
 
+watch(
+    () => props.connection,
+    (connection) => {
+
+        if (!connection) {
+
+            resetForm();
+            return;
+
+        }
+
+        form.type = connection.databaseType as DatabaseType;
+        form.host = connection.host;
+        form.port = connection.port;
+        form.database = connection.databaseName;
+        form.username = connection.username;
+        form.password = "";
+
+        connectionName.value = connection.name;
+        customConnectionName.value = true;
+
+    },
+    {
+        immediate: true
+    }
+);
+
+const dialogTitle = computed(() => {
+
+    switch (props.mode) {
+
+        case "new":
+            return "New Connection";
+
+        case "edit":
+            return "Edit Connection";
+
+        case "connect":
+            return "Connect";
+
+    }
+
+});
+
+const submitText = computed(() => {
+
+    return props.mode === "edit"
+        ? "Save"
+        : "Connect";
+
+});
+
+function resetForm() {
+
+    form.type = "POSTGRES";
+    form.host = "localhost";
+    form.port = 5432;
+    form.database = "postgres";
+    form.username = "postgres";
+    form.password = "";
+
+    customConnectionName.value = false;
+    connectionName.value = generateConnectionName();
+
+}
+
 function generateConnectionName() {
 
     const database = form.database.trim() || "database";
@@ -104,29 +178,50 @@ async function onTest() {
 
 }
 
-async function onConnect() {
+async function onSubmit() {
 
     connecting.value = true;
 
     try {
 
-        await createConnection(form);
+        switch (props.mode) {
 
-        await updateSetting(
-            "save_connection",
-            String(saveConnectionChecked.value)
-        );
+            case "new":
 
-        if (saveConnectionChecked.value) {
+                await createConnection(form);
 
-            await saveConnection({
-                name: connectionName.value,
-                databaseType: form.type,
-                host: form.host,
-                port: form.port,
-                databaseName: form.database,
-                username: form.username
-            });
+                await updateSetting(
+                    "save_connection",
+                    String(saveConnectionChecked.value)
+                );
+
+                if (saveConnectionChecked.value) {
+
+                    await saveConnection({
+                        name: connectionName.value,
+                        databaseType: form.type,
+                        host: form.host,
+                        port: form.port,
+                        databaseName: form.database,
+                        username: form.username
+                    });
+
+                }
+
+                break;
+
+            case "edit":
+
+                // TODO:
+                // await updateSavedConnection(...)
+
+                break;
+
+            case "connect":
+
+                await createConnection(form);
+
+                break;
 
         }
 
@@ -134,9 +229,13 @@ async function onConnect() {
         emit("close");
 
     } catch (e: any) {
+
         message.value = e.message;
+
     } finally {
+
         connecting.value = false;
+
     }
 
 }
@@ -189,7 +288,7 @@ function changeType(type: DatabaseType){
 
         <div class="dialog">
 
-            <h2>New Connection </h2>
+            <h2>{{ dialogTitle }}</h2>
 
             <label>
             Database
@@ -270,10 +369,10 @@ function changeType(type: DatabaseType){
                 </button>
 
                 <button
-                @click="onConnect"
-                :disabled="!tested || connecting"
+                    @click="onSubmit"
+                    :disabled="!tested || connecting"
                 >
-                Connect
+                    {{ submitText }}
                 </button>
 
             </div>
