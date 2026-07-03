@@ -1,5 +1,6 @@
 package com.anh.api;
 
+import com.anh.dto.ResponseUtil;
 import com.anh.model.SavedConnection;
 import com.anh.repository.SavedConnectionRepository;
 
@@ -18,9 +19,9 @@ public class SavedConnectionController {
 
         registerCreate(app);
 
-        // registerUpdate(app);
+        registerUpdate(app);
 
-        // registerDelete(app);
+        registerDelete(app);
     }
 
     private static void registerGet(Javalin app) {
@@ -34,23 +35,55 @@ public class SavedConnectionController {
 
             if (connection == null) {
 
-                ctx.status(404);
+                ResponseUtil.error(
+                        ctx,
+                        404,
+                        "Saved connection not found");
 
                 return;
             }
 
-            ctx.json(connection);
+            ResponseUtil.success(
+                ctx,
+                200,
+                "Success",
+                connection);
 
         });
 
     }
 
     private static void registerDelete(Javalin app) {
+        app.delete("/saved-connections/{id}", ctx -> {
+            int id = Integer.parseInt(
+                    ctx.pathParam("id"));
 
+            int res = repository.delete(id);
+
+            ResponseUtil.success(
+                ctx,
+                201,
+                "Success",
+                res);
+        });
     }
 
     private static void registerUpdate(Javalin app) {
+        app.put("/saved-connections/{id}", ctx -> {
+            int id = Integer.parseInt(
+                    ctx.pathParam("id"));
 
+            SavedConnection request =
+                    ctx.bodyAsClass(SavedConnection.class);
+            int res = repository.update(request.name, request.databaseType,
+                request.host, request.port, request.databaseName, request.username, id);
+
+            ResponseUtil.success(
+                ctx,
+                201,
+                "Success",
+                res);
+        });
     }
 
     private static void registerCreate(Javalin app) {
@@ -62,16 +95,22 @@ public class SavedConnectionController {
 
             int id = repository.save(request);
 
-            ctx.status(201);
-
-            ctx.json(id);
+            ResponseUtil.success(
+                ctx,
+                201,
+                "Success",
+                id);
         });
     }
 
     private static void registerList(Javalin app) {
         app.get("/saved-connections", ctx -> {
 
-            ctx.json(repository.findAll());
+            ResponseUtil.success(
+                ctx,
+                201,
+                "Success",
+                repository.findAll());
 
         });
     }

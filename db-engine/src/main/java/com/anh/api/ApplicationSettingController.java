@@ -1,5 +1,6 @@
 package com.anh.api;
 
+import com.anh.dto.ResponseUtil;
 import com.anh.model.ApplicationSetting;
 import com.anh.repository.ApplicationSettingRepository;
 
@@ -28,7 +29,12 @@ public class ApplicationSettingController {
 
             String key = ctx.pathParam("key");
 
-            ctx.json(repository.findByKey(key));
+            ResponseUtil.success(
+                ctx,
+                201,
+                "Success",
+                repository.findByKey(key));
+
         });
     }
 
@@ -41,9 +47,12 @@ public class ApplicationSettingController {
 
             int id = repository.update(key, request.value);
 
-            ctx.status(201);
+            ResponseUtil.success(
+                ctx,
+                201,
+                "Success",
+                id);
 
-            ctx.json(id);
         });
     }
 
@@ -53,7 +62,13 @@ public class ApplicationSettingController {
 
     private static void registerGet(Javalin app) {
         app.get("/settings", ctx -> {
-            ctx.json(repository.findAll());
+
+            ResponseUtil.success(
+                ctx,
+                201,
+                "Success",
+                repository.findAll());
+
         });
     }
 }

@@ -130,12 +130,57 @@ public class SavedConnectionRepository extends BaseRepository{
         }
     };
 
-    public void update(SavedConnection connection) {
+    public int update(String name,String databaseType,
+        String host,int port,String databaseName,String username, int id) {
+        String sql = """
+                update saved_connection set
+                    name = ?,
+                    database_type = ?,
+                    host = ?,
+                    port = ?,
+                    database_name = ?,
+                    username = ?
+                where id = ?
+                """;
+        try (
+            Connection dbConnection = getConnection();
+            PreparedStatement statement = dbConnection.prepareStatement(
+                sql
+            )) {
 
+            statement.setString(1, name);
+            statement.setString(2, databaseType);
+            statement.setString(3, host);
+            statement.setInt(4, port);
+            statement.setString(5, databaseName);
+            statement.setString(6, username);
+            statement.setInt(7, id);
+
+            return statement.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     };
 
-    public void delete(int id) {
+    public int delete(int id) {
+        String sql = """
+                delete saved_connection
+                where id = ?
+                """;
+        try (
+            Connection dbConnection = getConnection();
+            PreparedStatement statement = dbConnection.prepareStatement(
+                sql
+            )) {
 
+            statement.setInt(7, id);
+
+            return statement.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     };
 
 }
