@@ -5,21 +5,19 @@ export async function api<T>(
     options?: RequestInit
 ): Promise<T> {
 
-    try {
+    const response = await fetch(`${BASE_URL}${path}`, options);
 
-        const response = await fetch(`${BASE_URL}${path}`, options);
-
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        return await response.json();
-
-    } catch (e) {
-
-        console.error(e);
-
-        throw e;
+    if (!response.ok) {
+        throw new Error(await response.text());
     }
 
+    const json: ApiResponse<T> = await response.json();
+
+    return json.data;
+}
+
+export interface ApiResponse<T> {
+    status: number;
+    message: string;
+    data: T;
 }

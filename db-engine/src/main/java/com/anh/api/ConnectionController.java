@@ -1,6 +1,7 @@
 package com.anh.api;
 
 import com.anh.core.connection.ConnectionManager;
+import com.anh.dto.ApiResponse;
 import com.anh.dto.ConnectionRequest;
 import com.anh.dto.ConnectionResponse;
 
@@ -22,19 +23,17 @@ public class ConnectionController {
 
         app.post("/connect/test", ctx -> {
 
-            ConnectionResponse response = new ConnectionResponse();
-
             try {
 
                 ConnectionRequest request = ctx.bodyAsClass(ConnectionRequest.class);
 
                 ConnectionManager.testConnection(request);
 
+                ConnectionResponse response = new ConnectionResponse();
                 response.success = true;
-
                 response.message = "Connection successful";
 
-                ctx.json(response);
+                ctx.json(ApiResponse.success(response));
 
             } catch (Exception e) {
 
@@ -42,11 +41,7 @@ public class ConnectionController {
 
                 ctx.status(500);
 
-                response.success = false;
-
-                response.message = e.getMessage();
-
-                ctx.json(response);
+                ctx.json(ApiResponse.error(500, e.getMessage()));
             }
         });
     }
@@ -55,21 +50,19 @@ public class ConnectionController {
 
         app.post("/connect/create", ctx -> {
 
-            ConnectionResponse response = new ConnectionResponse();
-
             try {
 
                 ConnectionRequest request = ctx.bodyAsClass(ConnectionRequest.class);
 
                 String sessionId = ConnectionManager.createConnection(request);
 
+                ConnectionResponse response = new ConnectionResponse();
                 response.success = true;
-
                 response.message = "Session created";
-
                 response.sessionId = sessionId;
 
-                ctx.json(response);
+                ctx.status(201);
+                ctx.json(ApiResponse.created(response));
 
             } catch (Exception e) {
 
@@ -77,11 +70,7 @@ public class ConnectionController {
 
                 ctx.status(500);
 
-                response.success = false;
-
-                response.message = e.getMessage();
-
-                ctx.json(response);
+                ctx.json(ApiResponse.error(500, e.getMessage()));
             }
         });
     }
@@ -90,23 +79,18 @@ public class ConnectionController {
 
         app.delete("/connect/{sessionId}", ctx -> {
 
-            ConnectionResponse response = new ConnectionResponse();
-
             try {
 
-                String sessionId = ctx.pathParam(
-                        "sessionId");
+                String sessionId = ctx.pathParam("sessionId");
 
-                ConnectionManager.closeSession(
-                        sessionId);
+                ConnectionManager.closeSession(sessionId);
 
+                ConnectionResponse response = new ConnectionResponse();
                 response.success = true;
-
                 response.message = "Session closed";
-
                 response.sessionId = sessionId;
 
-                ctx.json(response);
+                ctx.json(ApiResponse.success(response));
 
             } catch (Exception e) {
 
@@ -114,11 +98,7 @@ public class ConnectionController {
 
                 ctx.status(500);
 
-                response.success = false;
-
-                response.message = e.getMessage();
-
-                ctx.json(response);
+                ctx.json(ApiResponse.error(500, e.getMessage()));
             }
         });
     }
@@ -128,7 +108,8 @@ public class ConnectionController {
         app.get("/connect/sessions", ctx -> {
 
             ctx.json(
-                ConnectionManager.getSessionInfos());
+                    ApiResponse.success(
+                            ConnectionManager.getSessionInfos()));
         });
     }
 }
