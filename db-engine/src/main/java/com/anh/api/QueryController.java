@@ -1,6 +1,7 @@
 package com.anh.api;
 
 import com.anh.core.query.QueryService;
+import com.anh.dto.ApiResponse;
 import com.anh.dto.QueryRequest;
 import com.anh.dto.QueryResponse;
 
@@ -23,7 +24,7 @@ public class QueryController {
                         request.sessionId,
                         request.sql);
 
-                ctx.json(response);
+                ctx.json(ApiResponse.success(response));
 
             } catch (Exception e) {
 
@@ -35,9 +36,7 @@ public class QueryController {
 
                 response.message = e.getMessage();
 
-                ctx.status(500);
-
-                ctx.json(response);
+                ctx.json(ApiResponse.error(500, e.getMessage()));
             }
         });
     }

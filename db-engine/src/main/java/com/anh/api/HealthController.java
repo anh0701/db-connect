@@ -1,5 +1,7 @@
 package com.anh.api;
 
+import com.anh.dto.ApiResponse;
+
 import io.javalin.Javalin;
 
 public class HealthController {
@@ -7,7 +9,7 @@ public class HealthController {
 
         app.get("/ping", ctx -> {
 
-            ctx.result("pong");
+            ctx.json(ApiResponse.success("pong"));
         });
     }
 }

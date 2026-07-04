@@ -1,6 +1,7 @@
 package com.anh.api;
 
 import com.anh.core.metadata.MetadataService;
+import com.anh.dto.ApiResponse;
 
 import io.javalin.Javalin;
 
@@ -26,15 +27,13 @@ public class MetadataController {
                         String sessionId = ctx.pathParam(
                                 "sessionId");
 
-                        ctx.json(MetadataService.getTables(sessionId));
+                        ctx.json(ApiResponse.success(MetadataService.getTables(sessionId)));
 
                     } catch (Exception e) {
 
                         e.printStackTrace();
+                        ctx.json(ApiResponse.error(500, e.getMessage()));
 
-                        ctx.status(500);
-
-                        ctx.result(e.getMessage());
                     }
                 });
     }
@@ -54,15 +53,13 @@ public class MetadataController {
                         String table = ctx.pathParam(
                                 "table");
 
-                        ctx.json(MetadataService.getColumns(sessionId, table));
+                        ctx.json(ApiResponse.success(MetadataService.getColumns(sessionId, table)));
 
                     } catch (Exception e) {
 
                         e.printStackTrace();
 
-                        ctx.status(500);
-
-                        ctx.result(e.getMessage());
+                        ctx.json(ApiResponse.error(500, e.getMessage()));
                     }
                 });
     }
