@@ -6,6 +6,7 @@ import { DatabaseType } from "../../types/DatabaseType";
 import { getSetting, updateSetting } from "../../api/settings";
 import { saveConnection } from "../../api/saved-connection";
 import { SavedConnection } from "../../types/connection/SavedConnection";
+import { DEFAULT_CONFIG } from "../../constants/database-defaults";
 
 type DialogMode = "new" | "edit" | "connect";
 
@@ -240,43 +241,17 @@ async function onSubmit() {
 
 }
 
-function changeType(type: DatabaseType){
+function changeType(type: DatabaseType) {
 
-    form.type=type;
+    const config = DEFAULT_CONFIG[type];
 
-    switch(type){
+    form.type = config.type;
+    form.host = config.host;
+    form.port = config.port;
+    form.database = config.database;
+    form.username = config.username;
 
-        case "POSTGRES":
-
-            form.port=5432;
-
-            break;
-
-        case "MYSQL":
-
-            form.port=3306;
-
-            break;
-
-        case "ORACLE":
-
-            form.port=1521;
-
-            break;
-
-        case "SQLSERVER":
-
-            form.port=1433;
-
-            break;
-
-        case "SQLITE":
-
-            form.port=0;
-
-            break;
-
-    }
+    form.password = "";
 
 }
 
