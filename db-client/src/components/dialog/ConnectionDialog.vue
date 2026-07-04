@@ -122,12 +122,9 @@ const submitText = computed(() => {
 
 function resetForm() {
 
-    form.type = "POSTGRES";
-    form.host = "localhost";
-    form.port = 5432;
-    form.database = "postgres";
-    form.username = "postgres";
-    form.password = "";
+    Object.assign(form, DEFAULT_CONFIG.POSTGRES, {
+        password: ""
+    });
 
     customConnectionName.value = false;
     connectionName.value = generateConnectionName();
