@@ -30,26 +30,21 @@ const form = reactive<ConnectionRequest>({
 });
 
 const testing = ref(false);
-
 const connecting = ref(false);
-
 const tested = ref(false);
-
 const message = ref("");
-
 const saveConnectionChecked = ref(true);
-
 const connectionName = ref("");
-
 const customConnectionName = ref(false);
 
-watch(form, () => {
-
-    tested.value = false;
-
-    message.value = "";
-
-}, { deep: true });
+watch(
+    form,
+    () => {
+        tested.value = false;
+        message.value = "";
+    },
+    { deep: true }
+);
 
 watch(
     () => [form.host, form.database],
@@ -61,22 +56,17 @@ watch(
 );
 
 watch(connectionName, (value) => {
-
     if (value !== generateConnectionName()) {
         customConnectionName.value = true;
     }
-
 });
 
 watch(
     () => props.connection,
     (connection) => {
-
         if (!connection) {
-
             resetForm();
             return;
-
         }
 
         form.type = connection.databaseType as DatabaseType;
@@ -88,7 +78,6 @@ watch(
 
         connectionName.value = connection.name;
         customConnectionName.value = true;
-
     },
     {
         immediate: true
@@ -96,9 +85,7 @@ watch(
 );
 
 const dialogTitle = computed(() => {
-
     switch (props.mode) {
-
         case "new":
             return "New Connection";
 
@@ -107,42 +94,32 @@ const dialogTitle = computed(() => {
 
         case "connect":
             return "Connect";
-
     }
-
 });
 
 const submitText = computed(() => {
-
     return props.mode === "edit"
         ? "Save"
         : "Connect";
-
 });
 
 function resetForm() {
-
     Object.assign(form, DEFAULT_CONFIG.POSTGRES, {
         password: ""
     });
 
     customConnectionName.value = false;
     connectionName.value = generateConnectionName();
-
 }
 
 function generateConnectionName() {
-
     const database = form.database.trim() || "database";
-
     const host = form.host.trim() || "localhost";
 
     return `${database}@${host}`;
-
 }
 
 onMounted(async () => {
-
     connectionName.value = generateConnectionName();
 
     try {
@@ -151,41 +128,30 @@ onMounted(async () => {
     } catch {
         saveConnectionChecked.value = true;
     }
-
 });
 
 async function onTest() {
-
     testing.value = true;
     message.value = "";
 
     try {
-
         const res = await testConnection(form);
         tested.value = res.success;
         message.value = res.message;
-
     } catch (e: any) {
         tested.value = false;
         message.value = e.message;
     } finally {
-
         testing.value = false;
-
     }
-
 }
 
 async function onSubmit() {
-
     connecting.value = true;
 
     try {
-
         switch (props.mode) {
-
             case "new":
-
                 await createConnection(form);
 
                 await updateSetting(
@@ -194,7 +160,6 @@ async function onSubmit() {
                 );
 
                 if (saveConnectionChecked.value) {
-
                     await saveConnection({
                         name: connectionName.value,
                         databaseType: form.type,
@@ -203,43 +168,32 @@ async function onSubmit() {
                         databaseName: form.database,
                         username: form.username
                     });
-
                 }
 
                 break;
 
             case "edit":
-
                 // TODO:
                 // await updateSavedConnection(...)
 
                 break;
 
             case "connect":
-
                 await createConnection(form);
 
                 break;
-
         }
 
         emit("created");
         emit("close");
-
     } catch (e: any) {
-
         message.value = e.message;
-
     } finally {
-
         connecting.value = false;
-
     }
-
 }
 
 function changeType(type: DatabaseType) {
-
     const config = DEFAULT_CONFIG[type];
 
     form.type = config.type;
@@ -247,171 +201,213 @@ function changeType(type: DatabaseType) {
     form.port = config.port;
     form.database = config.database;
     form.username = config.username;
-
     form.password = "";
-
 }
-
 </script>
 
 <template>
-
-    <div class="overlay">
-
-        <div class="dialog">
-
-            <h2>{{ dialogTitle }}</h2>
-
-            <label>
-            Database
-                <select
-                    :value="form.type"
-                    @change="changeType(($event.target as HTMLSelectElement).value as DatabaseType)"
-                >
-                    <option>POSTGRES</option>
-                    <option>MYSQL</option>
-                    <option>ORACLE</option>
-                    <option>SQLSERVER</option>
-                    <option>SQLITE</option>
-
-                </select>
-            </label>
-
-            <label>
-                Connection Name
-                <input v-model="connectionName" />
-            </label>
-
-            <label>
-            Host
-                <input v-model="form.host"/>
-            </label>
-
-            <label>
-            Port
-                <input
-                type="number"
-                v-model="form.port"
-                />
-            </label>
-
-            <label>
-            Database
-                <input
-                v-model="form.database"
-                />
-            </label>
-
-            <label>
-            Username
-                <input
-                v-model="form.username"
-                />
-            </label>
-
-            <label>
-            Password
-                <input
-                type="password"
-                v-model="form.password"
-                />
-            </label>
-
-            <label class="checkbox">
-                <input
-                    type="checkbox"
-                    v-model="saveConnectionChecked"
-                />
-                Save connection
-            </label>
-
-            <p>{{ message }} </p>
-            <div class="buttons">
+    <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+        @click.self="emit('close')"
+    >
+        <div
+            class="flex max-h-[90vh] w-full max-w-lg flex-col overflow-y-auto rounded-xl bg-white shadow-xl"
+        >
+            <!-- Header -->
+            <div
+                class="flex items-center justify-between border-b border-gray-200 px-6 py-4"
+            >
+                <h2 class="text-lg font-semibold text-gray-900">
+                    {{ dialogTitle }}
+                </h2>
 
                 <button
-                    @click="$emit('close')">
+                    type="button"
+                    class="rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                    @click="emit('close')"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <!-- Form -->
+            <div class="space-y-4 px-6 py-5">
+                <!-- Database Type -->
+                <label class="block">
+                    <span class="mb-1.5 block text-sm font-medium text-gray-700">
+                        Database
+                    </span>
+
+                    <select
+                        :value="form.type"
+                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                        @change="
+                            changeType(
+                                ($event.target as HTMLSelectElement)
+                                    .value as DatabaseType
+                            )
+                        "
+                    >
+                        <option value="POSTGRES">
+                            POSTGRES
+                        </option>
+
+                        <option value="MYSQL">
+                            MYSQL
+                        </option>
+
+                        <option value="ORACLE">
+                            ORACLE
+                        </option>
+
+                        <option value="SQLSERVER">
+                            SQLSERVER
+                        </option>
+
+                        <option value="SQLITE">
+                            SQLITE
+                        </option>
+                    </select>
+                </label>
+
+                <!-- Connection Name -->
+                <label class="block">
+                    <span class="mb-1.5 block text-sm font-medium text-gray-700">
+                        Connection Name
+                    </span>
+
+                    <input
+                        v-model="connectionName"
+                        type="text"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                </label>
+
+                <!-- Host -->
+                <label class="block">
+                    <span class="mb-1.5 block text-sm font-medium text-gray-700">
+                        Host
+                    </span>
+
+                    <input
+                        v-model="form.host"
+                        type="text"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                </label>
+
+                <!-- Port -->
+                <label class="block">
+                    <span class="mb-1.5 block text-sm font-medium text-gray-700">
+                        Port
+                    </span>
+
+                    <input
+                        v-model="form.port"
+                        type="number"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                </label>
+
+                <!-- Database Name -->
+                <label class="block">
+                    <span class="mb-1.5 block text-sm font-medium text-gray-700">
+                        Database Name
+                    </span>
+
+                    <input
+                        v-model="form.database"
+                        type="text"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                </label>
+
+                <!-- Username -->
+                <label class="block">
+                    <span class="mb-1.5 block text-sm font-medium text-gray-700">
+                        Username
+                    </span>
+
+                    <input
+                        v-model="form.username"
+                        type="text"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                </label>
+
+                <!-- Password -->
+                <label class="block">
+                    <span class="mb-1.5 block text-sm font-medium text-gray-700">
+                        Password
+                    </span>
+
+                    <input
+                        v-model="form.password"
+                        type="password"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    />
+                </label>
+
+                <!-- Save connection -->
+                <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+                    <label class="flex cursor-pointer items-start gap-3">
+                        <input
+                            v-model="saveConnectionChecked"
+                            type="checkbox"
+                            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                        />
+
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">
+                                Save connection
+                            </p>
+
+                            <p class="mt-0.5 text-xs text-gray-500">
+                                Save this connection for quick access later.
+                            </p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Message -->
+                <p
+                    v-if="message"
+                    class="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600"
+                >
+                    {{ message }}
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div
+                class="flex flex-wrap justify-end gap-2 border-t border-gray-200 px-6 py-4"
+            >
+                <button
+                    type="button"
+                    class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                    @click="emit('close')"
+                >
                     Cancel
                 </button>
 
                 <button
-                @click="onTest"
-                :disabled="testing"
+                    type="button"
+                    class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    :disabled="testing"
+                    @click="onTest"
                 >
-                Test
+                    {{ testing ? "Testing..." : "Test" }}
                 </button>
 
                 <button
-                    @click="onSubmit"
+                    type="button"
+                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     :disabled="!tested || connecting"
+                    @click="onSubmit"
                 >
-                    {{ submitText }}
+                    {{ connecting ? "Connecting..." : submitText }}
                 </button>
-
             </div>
         </div>
     </div>
-
 </template>
-
-<style scoped>
-
-.overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, .4);
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.dialog {
-    width: min(450px, 100%);
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-
-    box-sizing: border-box;
-
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-label {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-input,
-select {
-    width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
-}
-
-.buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.checkbox {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-}
-
-.checkbox input {
-    width: auto;
-}
-
-</style>
