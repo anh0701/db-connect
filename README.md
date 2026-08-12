@@ -81,3 +81,9 @@ PostgreSQL / MySQL / Oracle ...
 -->
 
 <!-- rm ~/.db-client/config.db -->
+
+## Demo
+
+![no saved](docs/no-saved-connection.png)
+
+![saved](docs/saved-connections.png)
