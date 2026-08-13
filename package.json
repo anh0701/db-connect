@@ -1,0 +1,30 @@
+{
+  "name": "db-connect",
+  "version": "1.0.0",
+  "description": "app connect multi database",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:backend": "cd db-engine && mvn compile dependency:build-classpath -Dmdep.outputFile=cp.txt && java -cp \"target/classes:$(cat cp.txt)\" com.anh.App",
+    "dev:frontend": "cd db-client && npm run tauri dev",
+    "dev": "concurrently --names BACKEND,FRONTEND \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/org-deur/db-connect.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/org-deur/db-connect/issues"
+  },
+  "homepage": "https://github.com/org-deur/db-connect#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}
