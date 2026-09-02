@@ -44,3 +44,7 @@ export function saveConnection(request: SaveConnectionRequest) {
     });
 
 }
+
+export function updateSavedConnection(request: SaveConnectionRequest){
+    
+}
