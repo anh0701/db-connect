@@ -1,6 +1,6 @@
 ### variable
 
-@session = e44baae5-bbe3-4267-983d-6650098afa6c
+@session = d2ea5180-c19b-45ee-9f11-c8befa4277be
 @localhost = http://localhost:8080
 
 ### check backend app
@@ -60,16 +60,19 @@ Content-Type: application/json
 
 {
   "sessionId": "{{session}}",
-  "sql": "select * from users"
+  "sql": "select * from public.users"
 }
+
+### schema
+GET {{localhost}}/metadata/schemas/{{session}}
 
 ### get all table name
 
-GET {{localhost}}/metadata/tables/{{session}}
+GET {{localhost}}/metadata/tables/{{session}}?schema=public
 
 ### get column of table
 
-GET {{localhost}}/metadata/columns/{{session}}/users
+GET {{localhost}}/metadata/columns/{{session}}/schema/users
 
 ### saved connection list
 
