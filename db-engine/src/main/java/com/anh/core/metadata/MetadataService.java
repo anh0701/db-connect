@@ -13,7 +13,8 @@ import com.anh.model.TableInfo;
 
 public class MetadataService {
     public static List<TableInfo> getTables(
-            String sessionId) throws Exception {
+        String sessionId,
+        String schema) throws Exception {
 
         ConnectionSession session = ConnectionManager.getSession(
                 sessionId);
@@ -33,7 +34,7 @@ public class MetadataService {
         try (
             ResultSet resultSet = metaData.getTables(
                     null,
-                    null,
+                    schema,
                     "%",
                     new String[] {
                             "TABLE"
@@ -60,7 +61,10 @@ public class MetadataService {
         return tables;
     }
 
-    public static List<ColumnInfo> getColumns(String sessionId, String tableName) throws Exception {
+    public static List<ColumnInfo> getColumns(
+        String sessionId,
+        String schema,
+        String tableName) throws Exception {
 
         ConnectionSession session = ConnectionManager.getSession(
                 sessionId);
@@ -80,9 +84,10 @@ public class MetadataService {
         try (
             ResultSet resultSet = metaData.getColumns(
                     null,
-                    null,
+                    schema,
                     tableName,
-                    "%");
+                    "%"
+            )
         ) {
 
             while (resultSet.next()) {
@@ -98,8 +103,9 @@ public class MetadataService {
                 column.size = resultSet.getInt(
                         "COLUMN_SIZE");
 
-                column.nullable = resultSet.getInt(
-                        "NULLABLE") == DatabaseMetaData.columnNullable;
+                column.nullable =
+                        resultSet.getInt("NULLABLE")
+                                == DatabaseMetaData.columnNullable;
 
                 columns.add(column);
             }
@@ -107,4 +113,42 @@ public class MetadataService {
 
         return columns;
     }
+    
+    public static List<String> getSchemas(
+        String sessionId) throws Exception {
+
+        ConnectionSession session = ConnectionManager.getSession(
+                sessionId);
+
+        if (session == null) {
+
+            throw new RuntimeException(
+                    "Session not found");
+        }
+
+        List<String> schemas = new ArrayList<>();
+
+        Connection connection = session.connection;
+
+        DatabaseMetaData metaData = connection.getMetaData();
+
+        try (
+            ResultSet resultSet = metaData.getSchemas()
+        ) {
+
+            while (resultSet.next()) {
+
+                String schema = resultSet.getString(
+                        "TABLE_SCHEM");
+
+                if (schema != null) {
+
+                    schemas.add(schema);
+                }
+            }
+        }
+
+        return schemas;
+    }
+
 }

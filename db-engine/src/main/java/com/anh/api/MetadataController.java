@@ -10,57 +10,97 @@ public class MetadataController {
     public static void register(
             Javalin app) {
 
+        registerSchemas(app);
+
         registerTables(app);
 
         registerColumns(app);
+    }
+
+    private static void registerSchemas(
+            Javalin app) {
+
+        app.get(
+            "/metadata/schemas/{sessionId}",
+            ctx -> {
+
+                try {
+
+                    String sessionId = ctx.pathParam("sessionId");
+
+                    ctx.json(ApiResponse.success(MetadataService.getSchemas(sessionId)));
+
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+
+                    ctx.status(500);
+
+                    ctx.json(ApiResponse.error(500, e.getMessage()));
+                }
+            }
+        );
     }
 
     private static void registerTables(
             Javalin app) {
 
         app.get(
-                "/metadata/tables/{sessionId}",
-                ctx -> {
+            "/metadata/tables/{sessionId}",
+            ctx -> {
 
-                    try {
+                try {
 
-                        String sessionId = ctx.pathParam(
-                                "sessionId");
+                    String sessionId = ctx.pathParam("sessionId");
 
-                        ctx.json(ApiResponse.success(MetadataService.getTables(sessionId)));
+                    String schema = ctx.queryParam("schema");
 
-                    } catch (Exception e) {
+                    ctx.json(ApiResponse.success(MetadataService.getTables(sessionId, schema)));
 
-                        e.printStackTrace();
-                        ctx.json(ApiResponse.error(500, e.getMessage()));
+                } catch (Exception e) {
 
-                    }
-                });
+                    e.printStackTrace();
+
+                    ctx.status(500);
+
+                    ctx.json(ApiResponse.error(500, e.getMessage()));
+                }
+            }
+        );
     }
 
     private static void registerColumns(
             Javalin app) {
 
         app.get(
-                "/metadata/columns/{sessionId}/{table}",
-                ctx -> {
+            "/metadata/columns/{sessionId}/{schema}/{table}",
+            ctx -> {
 
-                    try {
+                try {
 
-                        String sessionId = ctx.pathParam(
-                                "sessionId");
+                    String sessionId = ctx.pathParam("sessionId");
 
-                        String table = ctx.pathParam(
-                                "table");
+                    String schema = ctx.pathParam("schema");
 
-                        ctx.json(ApiResponse.success(MetadataService.getColumns(sessionId, table)));
+                    String table = ctx.pathParam("table");
 
-                    } catch (Exception e) {
+                    ctx.json(
+                            ApiResponse.success(
+                                    MetadataService.getColumns(
+                                            sessionId,
+                                            schema,
+                                            table)));
 
-                        e.printStackTrace();
+                } catch (Exception e) {
 
-                        ctx.json(ApiResponse.error(500, e.getMessage()));
-                    }
-                });
+                    e.printStackTrace();
+
+                    ctx.status(500);
+
+                    ctx.json(ApiResponse.error(500, e.getMessage()));
+                }
+            }
+        );
     }
+
 }
